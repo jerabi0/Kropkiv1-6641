@@ -1,0 +1,40 @@
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+ browser=p.chromium.launch(headless=True,executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+ page=browser.new_page(viewport={'width':1440,'height':1080},device_scale_factor=1)
+ errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+ page.goto('http://localhost:4200',wait_until='networkidle')
+ page.evaluate('localStorage.clear()');page.reload(wait_until='networkidle')
+ page.screenshot(path='/home/user/kropki/arena-desktop.png',full_page=True)
+ page.locator('[data-cell="7-5"]').click()
+ page.wait_for_function("document.querySelector('.board-bottom').textContent.includes('2 coups joués')")
+ page.get_by_role('button',name='Historique').click()
+ assert 'H6' in page.locator('.history-scroll').inner_text()
+ page.reload(wait_until='networkidle');assert '2 coups joués' in page.locator('.board-bottom').inner_text()
+ page.get_by_role('button',name='Annuler',exact=True).click();assert '0 coup joué' in page.locator('.board-bottom').inner_text()
+ page.locator('.rail-nav').get_by_role('button',name='À deux',exact=True).click()
+ page.get_by_role('button',name='Commencer la partie').click()
+ for x,y in [(3,2),(3,3),(4,3),(10,10),(3,4),(11,10),(2,3)]:page.locator(f'[data-cell="{x}-{y}"]').click()
+ assert '1' in page.locator('.score-number').first.inner_text()
+ assert page.locator('.game-board line[stroke="#406be1"]').count()>0
+ page.get_by_role('button',name='Historique').click();assert 'D3' in page.locator('.history-scroll').inner_text()
+ page.screenshot(path='/home/user/kropki/arena-capture.png',full_page=True)
+ page.get_by_role('button',name='Terminer',exact=True).click()
+ page.get_by_role('button',name='Terminer la partie',exact=True).click();assert 'Les bleus remportent' in page.locator('.message').inner_text()
+ page.get_by_role('button',name='Nouvelle partie',exact=True).click()
+ page.locator('.dialog-modes').get_by_role('button',name='L’ordinateur').click()
+ page.get_by_role('button',name='Commencer la partie').click()
+ page.locator('.rail-nav').get_by_role('button',name='Comment jouer').click();assert page.locator('dialog').is_visible()
+ page.get_by_role('button',name='C’est parti').click();assert not page.locator('dialog').is_visible()
+ for width in [390,680,768,1024,1440]:
+  page.set_viewport_size({'width':width,'height':950})
+  assert page.evaluate('document.documentElement.scrollWidth')==width, f'overflow at {width}'
+ mobile=browser.new_page(viewport={'width':390,'height':844},device_scale_factor=1,is_mobile=True,has_touch=True)
+ mobile.goto('http://localhost:4200',wait_until='networkidle')
+ assert mobile.evaluate('document.documentElement.scrollWidth')==390
+ mobile.screenshot(path='/home/user/kropki/arena-mobile.png',full_page=True)
+ mobile.locator('[data-cell="7-5"]').tap();mobile.wait_for_function("document.querySelector('.board-bottom').textContent.includes('2 coups joués')")
+ mobile.get_by_role('button',name='Historique').tap();assert 'H6' in mobile.locator('.history-scroll').inner_text()
+ assert not errors,errors
+ print('PASS: AI, captures, undo, persistence, history, finish, modals, touch, 5 responsive widths; no JS errors')
+ browser.close()
