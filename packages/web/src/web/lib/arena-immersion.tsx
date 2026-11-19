@@ -71,25 +71,41 @@ export function useArenaImmersion() {
   };
 }
 
-export function playCaptureSound(enabled: boolean) {
+export function playCaptureSound(enabled: boolean, terrainId = "neon") {
   if (!enabled || typeof window === "undefined") return;
   try {
     const AudioContextClass = window.AudioContext;
     if (!AudioContextClass) return;
     const context = new AudioContextClass();
+    const profiles: Record<string, { notes: number[]; wave: OscillatorType }> = {
+      neon: { notes: [440, 660, 880], wave: "triangle" },
+      volcano: { notes: [110, 165, 220], wave: "sawtooth" },
+      ice: { notes: [660, 880, 1320], wave: "sine" },
+      storm: { notes: [180, 360, 540], wave: "square" },
+      cavern: { notes: [130, 196, 261], wave: "triangle" },
+      ocean: { notes: [220, 330, 440], wave: "sine" },
+      steppe: { notes: [330, 494, 659], wave: "triangle" },
+      canyon: { notes: [146, 220, 293], wave: "sawtooth" },
+      sanctuary: { notes: [523, 659, 784], wave: "sine" },
+      jungle: { notes: [294, 392, 587], wave: "triangle" },
+      cosmos: { notes: [392, 587, 784], wave: "sine" },
+      crater: { notes: [98, 147, 196], wave: "sawtooth" },
+    };
+    const profile = profiles[terrainId] ?? profiles.neon;
     const now = context.currentTime;
-    [440, 660, 880].forEach((frequency, index) => {
+    profile.notes.forEach((frequency, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
-      oscillator.type = index === 2 ? "sine" : "triangle";
-      oscillator.frequency.setValueAtTime(frequency, now + index * 0.065);
-      gain.gain.setValueAtTime(0.0001, now + index * 0.065);
-      gain.gain.exponentialRampToValueAtTime(0.075, now + index * 0.065 + 0.018);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.065 + 0.24);
+      const start = now + index * 0.065;
+      oscillator.type = profile.wave;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.055, start + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.24);
       oscillator.connect(gain);
       gain.connect(context.destination);
-      oscillator.start(now + index * 0.065);
-      oscillator.stop(now + index * 0.065 + 0.25);
+      oscillator.start(start);
+      oscillator.stop(start + 0.25);
     });
     window.setTimeout(() => void context.close(), 700);
   } catch {
