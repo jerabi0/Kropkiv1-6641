@@ -90,7 +90,39 @@
   .game-board .capture-zone.capture-seal-circle { transition: none; animation: none; }
 }
 
-/* Capture impact: the boundary draws first, then its seal particles flare. */
+/* Capture sequence: territory appears, its boundary closes, then the seal impacts. */
+.game-board .capture-zone.is-animating {
+  animation: seal-impact 620ms cubic-bezier(.16,.82,.25,1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes seal-impact {
+  0% { opacity: .18; transform: scale(.965); filter: brightness(1); }
+  58% { opacity: 1; transform: scale(1.025); filter: brightness(1.65); }
+  78% { transform: scale(.99); filter: brightness(1.2); }
+  100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+}
+.game-board .capture-zone.is-animating .capture-cell {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: captured-territory-fill 460ms ease-out both;
+}
+@keyframes captured-territory-fill {
+  0% { opacity: 0; scale: .35; }
+  65% { opacity: .9; scale: 1.08; }
+  100% { opacity: 1; scale: 1; }
+}
+.game-board .capture-zone.is-animating .capture-edge {
+  stroke-dasharray: 32;
+  stroke-dashoffset: 32;
+  stroke-width: 3.4;
+  filter: drop-shadow(0 0 5px currentColor);
+  animation: capture-boundary-draw 420ms cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes capture-boundary-draw {
+  to { stroke-dashoffset: 0; }
+}
 .game-board .seal-spark {
   opacity: 0;
   transform-box: fill-box;
@@ -102,10 +134,6 @@
   0% { opacity: 0; scale: .1; }
   28% { opacity: 1; scale: 1.8; }
   100% { opacity: 0; scale: .25; }
-}
-.game-board .capture-zone.is-animating .capture-edge {
-  filter: drop-shadow(0 0 5px currentColor);
-  stroke-width: 3.4;
 }
 @media (max-width: 680px) {
   .arena-immersion-controls {
