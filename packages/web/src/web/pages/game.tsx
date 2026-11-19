@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArenaImmersionControls, playCaptureSound, useArenaImmersion } from "../lib/arena-immersion";
 import "../styles/arena-immersion.css";
 import {
@@ -324,7 +324,7 @@ export default function GamePage() {
                 setSeal={immersion.setSeal}
                 setSound={immersion.setSound}
               />
-              <div className={"board-paper " + (ai ? "is-thinking" : "")} data-terrain={immersion.terrain.id} style={{ "--terrain-background": immersion.terrain.background, "--terrain-grid": immersion.terrain.grid, "--terrain-accent": immersion.terrain.accent, "--terrain-glow": immersion.terrain.glow } as React.CSSProperties}>
+              <div className={"board-paper " + (ai ? "is-thinking" : "")} data-terrain={immersion.terrain.id} style={{ "--terrain-background": immersion.terrain.background, "--terrain-grid": immersion.terrain.grid, "--terrain-accent": immersion.terrain.accent, "--terrain-glow": immersion.terrain.glow } as CSSProperties}>
                 <svg
                   className="game-board"
                   viewBox={`0 0 ${vw} ${vh}`}
