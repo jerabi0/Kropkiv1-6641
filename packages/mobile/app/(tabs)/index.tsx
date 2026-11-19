@@ -64,19 +64,21 @@ export default function Index() {
   const [haptics, setHaptics] = useState(true);
   const [notice, setNotice] = useState("À toi de jouer. Pose ton premier point.");
   const [captureId, setCaptureId] = useState(0);
+  const [captureCells, setCaptureCells] = useState<number[]>([]);
   const capturePulse = useRef(new Animated.Value(0)).current;
   const terrain = TERRAIN.find((item) => item.id === terrainId) ?? TERRAIN[0];
   const seal = SEALS.find((item) => item.id === sealId) ?? SEALS[0];
   const score = scores(game);
   const recentMoves = game.moves.slice(-5);
   const aiTurn = mode === "computer" && game.turn === 2 && !game.ended;
-  const cellSize = Math.max(19, Math.min(28, Math.floor((width - 40) / game.w)));
+  const cellSize = Math.max(13, Math.min(28, Math.floor((width - 76) / game.w)));
 
   const commitMove = useCallback((source: Game, x: number, y: number) => {
     const next = play(source, x, y);
     if (next === source) return;
     const newZones = next.zones.filter((zone) => !source.zones.includes(zone));
     if (newZones.length) {
+      setCaptureCells(Array.from(new Set(newZones.flatMap((zone) => zone.cells))));
       setCaptureId((value) => value + 1);
       setNotice("Scellement réussi ! Territoire capturé.");
       if (haptics && Platform.OS !== "web") Vibration.vibrate(75);
@@ -101,7 +103,9 @@ export default function Index() {
     Animated.sequence([
       Animated.timing(capturePulse, { toValue: 1, duration: 180, useNativeDriver: true }),
       Animated.timing(capturePulse, { toValue: 0, duration: 520, useNativeDriver: true }),
-    ]).start();
+    ]).start(({ finished }) => {
+      if (finished) setCaptureCells([]);
+    });
   }, [captureId, capturePulse]);
 
   function place(x: number, y: number) {
@@ -178,7 +182,19 @@ export default function Index() {
           <Text style={[styles.turnText, { color: terrain.accent }]}>{game.ended ? winner : aiTurn ? "L'IA réfléchit…" : game.turn === 1 ? "À toi de jouer" : "Aux rouges de jouer"}</Text>
         </View>
         <View style={[styles.boardFrame, { backgroundColor: terrain.bg, borderColor: terrain.accent }]}>
-          <View style={[styles.board, { width: cellSize * game.w }]}>
+          <View style={styles.boardCoordinates}>
+            <View style={styles.coordinateCorner} />
+            {Array.from({ length: game.w }, (_, x) => (
+              <Text key={`col-${x}`} style={[styles.columnCoordinate, { width: cellSize }]}>{String.fromCharCode(65 + x)}</Text>
+            ))}
+          </View>
+          <View style={styles.boardWithRows}>
+            <View style={styles.rowCoordinates}>
+              {Array.from({ length: game.h }, (_, y) => (
+                <Text key={`row-${y}`} style={[styles.rowCoordinate, { height: cellSize }]}>{y + 1}</Text>
+              ))}
+            </View>
+            <View style={[styles.board, { width: cellSize * game.w }]}>
             {game.board.map((point, index) => {
               const x = index % game.w;
               const y = Math.floor(index / game.w);
@@ -198,12 +214,13 @@ export default function Index() {
                   ]}
                 >
                   {point ? <View style={[styles.stone, { backgroundColor: point === 1 ? COLORS.blue : COLORS.red, opacity: isCaptured ? 0.48 : 1 }]} /> : null}
+                  {captureCells.includes(index) ? <Animated.View pointerEvents="none" style={[styles.captureCellFlash, { borderColor: point === 1 ? COLORS.blue : COLORS.red, opacity: capturePulse }]} /> : null}
                   {game.moves.at(-1)?.x === x && game.moves.at(-1)?.y === y ? <View pointerEvents="none" style={styles.lastMoveRing} /> : null}
                 </Pressable>
               );
             })}
+            </View>
           </View>
-          <Animated.View pointerEvents="none" style={[styles.captureFlash, { opacity: capturePulse }]} />
         </View>
 
         <Text style={styles.boardHint}>Appuie sur une intersection libre pour poser un point.</Text>
@@ -289,11 +306,17 @@ const styles = StyleSheet.create({
   sectionTitle: { color: "#a8b8ca", fontSize: 9, fontWeight: "800", letterSpacing: 0.8 },
   turnText: { fontSize: 9, fontWeight: "700" },
   boardFrame: { alignSelf: "center", borderWidth: 2, borderRadius: 10, padding: 6, shadowColor: "#000", shadowOpacity: 0.35, shadowRadius: 12, elevation: 5, overflow: "hidden" },
+  boardCoordinates: { flexDirection: "row", alignItems: "center", paddingLeft: 18 },
+  coordinateCorner: { width: 0 },
+  columnCoordinate: { color: "#8fa4bc", fontSize: 8, fontWeight: "800", textAlign: "center", paddingBottom: 4 },
+  boardWithRows: { flexDirection: "row" },
+  rowCoordinates: { width: 18 },
+  rowCoordinate: { color: "#8fa4bc", fontSize: 8, fontWeight: "800", textAlign: "center", textAlignVertical: "center", includeFontPadding: false },
   board: { flexDirection: "row", flexWrap: "wrap" },
   cell: { alignItems: "center", justifyContent: "center", borderWidth: 0.55, borderRadius: 3 },
   stone: { width: 8, height: 8, borderRadius: 5, borderWidth: 1, borderColor: "#ffffff80" },
   lastMoveRing: { position: "absolute", width: 19, height: 19, borderRadius: 12, borderWidth: 1.5, borderColor: "#ffffff", backgroundColor: "transparent" },
-  captureFlash: { ...StyleSheet.absoluteFillObject, borderWidth: 3, borderColor: "#ffffff", borderRadius: 7, backgroundColor: "#ffffff12" },
+  captureCellFlash: { ...StyleSheet.absoluteFillObject, borderWidth: 1.5, borderRadius: 4, backgroundColor: "#ffffff30" },
   boardHint: { textAlign: "center", color: "#7e8ea3", fontSize: 9 },
   historyPanel: { backgroundColor: "#121b28", borderWidth: 1, borderColor: "#243247", borderRadius: 9, padding: 10, gap: 9 },
   historyHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
