@@ -1,0 +1,86 @@
+/* THE WORLD — terrain palettes and capture-seal treatments.
+   These are presentation settings only: they do not alter territory rules or scoring. */
+.arena-immersion-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line, #d8d9d4);
+  border-radius: 9px;
+  background: var(--panel, #fff);
+}
+.arena-immersion-controls label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 115px;
+}
+.arena-immersion-controls label span {
+  color: var(--muted, #777);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.arena-immersion-controls select,
+.arena-immersion-controls button {
+  min-height: 34px;
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--line, #d8d9d4);
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  color: var(--foreground, #242424);
+  font: inherit;
+  font-size: 12px;
+}
+.arena-immersion-controls button {
+  flex: 0 1 115px;
+  cursor: pointer;
+}
+.arena-immersion-controls button.sound-enabled {
+  border-color: #5a9b75;
+  color: #31724b;
+}
+.board-paper[data-terrain] {
+  background:
+    radial-gradient(ellipse at 50% 45%, var(--terrain-glow), transparent 72%),
+    var(--terrain-background) !important;
+  border-color: var(--terrain-accent) !important;
+  transition: background 260ms ease, border-color 260ms ease;
+}
+.board-paper[data-terrain] .game-board .grid-line {
+  stroke: var(--terrain-grid);
+  transition: stroke 260ms ease;
+}
+.board-paper[data-terrain] .game-board .coordinate {
+  fill: var(--terrain-accent);
+}
+.game-board .capture-zone .capture-edge {
+  filter: drop-shadow(0 0 3px currentColor);
+  stroke-linecap: round;
+}
+.game-board .capture-zone.capture-seal-circle .capture-edge { stroke-width: 3.2; }
+.game-board .capture-zone.capture-seal-chains .capture-edge { stroke-dasharray: 4 4; stroke-width: 3; }
+.game-board .capture-zone.capture-seal-barrier .capture-edge { stroke-dasharray: 12 4; stroke-width: 3; }
+.game-board .capture-zone.capture-seal-talismans .capture-edge { stroke-dasharray: 2 5; stroke-width: 4; }
+.game-board .capture-zone.capture-seal-cube .capture-edge { stroke-dasharray: 8 2 2 2; stroke-width: 3; }
+.game-board .capture-zone.capture-seal-lightning .capture-edge { stroke-dasharray: 1 3; stroke-width: 4; filter: drop-shadow(0 0 5px #ffe14a); }
+.game-board .capture-zone.capture-seal-sakura .capture-edge { stroke-dasharray: 5 5; stroke-width: 3; filter: drop-shadow(0 0 4px #ff9acb); }
+.game-board .capture-zone.capture-seal-web .capture-edge { stroke-dasharray: 1 5; stroke-width: 2.5; }
+.game-board .capture-zone.capture-seal-inferno .capture-edge { stroke-dasharray: 10 3; stroke-width: 4; filter: drop-shadow(0 0 5px #ff633d); }
+.game-board .capture-zone.capture-seal-wave .capture-edge { stroke-dasharray: 15 5; stroke-width: 3; }
+.game-board .capture-zone.capture-seal-skull .capture-edge { stroke-dasharray: 6 2 1 2; stroke-width: 3.5; }
+.game-board .capture-zone.capture-seal-constellation .capture-edge { stroke-dasharray: 1 7; stroke-width: 4; filter: drop-shadow(0 0 5px #b7a7ff); }
+.game-board .capture-zone.capture-seal-circle { animation: seal-impact 520ms ease-out both; transform-box: fill-box; transform-origin: center; }
+@keyframes seal-impact {
+  0% { opacity: .25; }
+  45% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-paper[data-terrain], .board-paper[data-terrain] .game-board .grid-line,
+  .game-board .capture-zone.capture-seal-circle { transition: none; animation: none; }
+}
