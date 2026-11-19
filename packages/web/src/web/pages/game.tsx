@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -116,7 +116,7 @@ export default function GamePage() {
       if (m) commitMove(game, ...m);
     }, 420);
     return () => clearTimeout(t);
-  }, [game, ai, level]);
+  }, [game, ai, level, commitMove]);
   useEffect(() => {
     if (modal) dialog.current?.showModal();
     else dialog.current?.close();
@@ -126,7 +126,7 @@ export default function GamePage() {
     const timer = window.setTimeout(() => setCaptureAnimation(null), 1050);
     return () => window.clearTimeout(timer);
   }, [captureAnimation]);
-  function commitMove(source: Game, x: number, y: number) {
+  const commitMove = useCallback((source: Game, x: number, y: number) => {
     const next = play(source, x, y);
     if (next === source) return;
     const newZones = next.zones.filter((zone) => !source.zones.includes(zone));
@@ -138,7 +138,7 @@ export default function GamePage() {
       setNotice("");
     }
     setGame(next);
-  }
+  }, []);
   function move(x: number, y: number) {
     if (ai || game.ended) return;
     if (!legal(game, x, y)) {
@@ -151,12 +151,14 @@ export default function GamePage() {
     if (!game.moves.length) return;
     let count = 1;
     if (mode === "computer" && game.moves.at(-1)?.player === 2) count = 2;
+    setCaptureAnimation(null);
     setGame(replay(game.moves.slice(0, -count), game.w, game.h));
     setNotice("Dernier coup annulé.");
   }
   function start() {
     setMode(newMode);
     setLevel(newLevel);
+    setCaptureAnimation(null);
     setGame(createGame(size, size === 13 ? 11 : size === 21 ? 17 : 13));
     setModal(null);
     setNotice("Nouvelle partie. À toi de poser le premier point.");
@@ -424,6 +426,7 @@ export default function GamePage() {
                             )}
                             {last?.x === x && last?.y === y && (
                               <circle
+                                key={`last-${x}-${y}`}
                                 cx={cx}
                                 cy={cy}
                                 r="11"
