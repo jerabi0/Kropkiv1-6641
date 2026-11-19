@@ -1718,8 +1718,8 @@ dialog::backdrop {
   animation: territory-reveal 430ms cubic-bezier(.2,.75,.25,1) both;
 }
 .game-board .capture-edge {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
   animation: boundary-draw 360ms ease-out both;
 }
 .player-score.score-bump {
