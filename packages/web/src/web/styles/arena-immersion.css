@@ -7,9 +7,9 @@
   gap: 9px;
   margin: 0 0 12px;
   padding: 10px 12px;
-  border: 1px solid var(--line, #d8d9d4);
+  border: 1px solid #45483b;
   border-radius: 9px;
-  background: var(--panel, #fff);
+  background: #302f2b;
 }
 .arena-immersion-controls label {
   display: grid;
@@ -29,10 +29,10 @@
   min-height: 34px;
   width: 100%;
   padding: 6px 9px;
-  border: 1px solid var(--line, #d8d9d4);
+  border: 1px solid #45483b;
   border-radius: 6px;
-  background: var(--surface, #fff);
-  color: var(--foreground, #242424);
+  background: #20231e;
+  color: #e8ecdf;
   font: inherit;
   font-size: 12px;
 }
@@ -42,7 +42,12 @@
 }
 .arena-immersion-controls button.sound-enabled {
   border-color: #5a9b75;
-  color: #31724b;
+  color: #b8df9a;
+}
+.arena-immersion-controls select:focus-visible,
+.arena-immersion-controls button:focus-visible {
+  outline: 2px solid var(--terrain-accent, #9bc35d);
+  outline-offset: 2px;
 }
 .board-paper[data-terrain] {
   background:
