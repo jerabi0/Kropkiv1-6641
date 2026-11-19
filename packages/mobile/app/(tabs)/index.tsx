@@ -177,7 +177,7 @@ export default function Index() {
           <Text style={[styles.turnText, { color: terrain.accent }]}>{game.ended ? winner : aiTurn ? "L'IA réfléchit…" : game.turn === 1 ? "À toi de jouer" : "Aux rouges de jouer"}</Text>
         </View>
         <View style={[styles.boardFrame, { backgroundColor: terrain.bg, borderColor: terrain.accent }]}>
-          <View style={styles.board}>
+          <View style={[styles.board, { width: cellSize * game.w }]}>
             {game.board.map((point, index) => {
               const x = index % game.w;
               const y = Math.floor(index / game.w);
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: "#a8b8ca", fontSize: 9, fontWeight: "800", letterSpacing: 0.8 },
   turnText: { fontSize: 9, fontWeight: "700" },
   boardFrame: { alignSelf: "center", borderWidth: 2, borderRadius: 10, padding: 6, shadowColor: "#000", shadowOpacity: 0.35, shadowRadius: 12, elevation: 5, overflow: "hidden" },
-  board: { flexDirection: "row", flexWrap: "wrap", width: cellSize * 13 },
+  board: { flexDirection: "row", flexWrap: "wrap" },
   cell: { alignItems: "center", justifyContent: "center", borderWidth: 0.55, borderRadius: 3 },
   stone: { width: 8, height: 8, borderRadius: 5, borderWidth: 1, borderColor: "#ffffff80" },
   captureFlash: { ...StyleSheet.absoluteFillObject, borderWidth: 3, borderColor: "#ffffff", borderRadius: 7, backgroundColor: "#ffffff12" },
