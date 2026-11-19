@@ -68,6 +68,7 @@ export default function Index() {
   const terrain = TERRAIN.find((item) => item.id === terrainId) ?? TERRAIN[0];
   const seal = SEALS.find((item) => item.id === sealId) ?? SEALS[0];
   const score = scores(game);
+  const recentMoves = game.moves.slice(-5);
   const aiTurn = mode === "computer" && game.turn === 2 && !game.ended;
   const cellSize = Math.max(19, Math.min(28, Math.floor((width - 40) / game.w)));
 
@@ -197,6 +198,7 @@ export default function Index() {
                   ]}
                 >
                   {point ? <View style={[styles.stone, { backgroundColor: point === 1 ? COLORS.blue : COLORS.red, opacity: isCaptured ? 0.48 : 1 }]} /> : null}
+                  {game.moves.at(-1)?.x === x && game.moves.at(-1)?.y === y ? <View pointerEvents="none" style={styles.lastMoveRing} /> : null}
                 </Pressable>
               );
             })}
@@ -205,6 +207,29 @@ export default function Index() {
         </View>
 
         <Text style={styles.boardHint}>Appuie sur une intersection libre pour poser un point.</Text>
+        <View style={styles.historyPanel}>
+          <View style={styles.historyHeading}>
+            <Text style={styles.historyTitle}>COUPS RÉCENTS</Text>
+            <Text style={styles.historyCount}>{game.moves.length} au total</Text>
+          </View>
+          {recentMoves.length ? (
+            <View style={styles.historyList}>
+              {recentMoves.map((move, index) => {
+                const number = game.moves.length - recentMoves.length + index + 1;
+                const isLast = number === game.moves.length;
+                return (
+                  <View key={number} style={[styles.historyItem, isLast && styles.historyItemLast]}>
+                    <Text style={styles.historyNumber}>#{number}</Text>
+                    <Text style={styles.historyCoordinate}>{String.fromCharCode(65 + move.x)}{move.y + 1}</Text>
+                    <View style={[styles.historyDot, { backgroundColor: move.player === 1 ? COLORS.blue : COLORS.red }]} />
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <Text style={styles.historyEmpty}>Les coups joués apparaîtront ici.</Text>
+          )}
+        </View>
         {notice ? <Text style={styles.notice}>{notice}</Text> : null}
 
         <View style={styles.actions}>
@@ -267,8 +292,20 @@ const styles = StyleSheet.create({
   board: { flexDirection: "row", flexWrap: "wrap" },
   cell: { alignItems: "center", justifyContent: "center", borderWidth: 0.55, borderRadius: 3 },
   stone: { width: 8, height: 8, borderRadius: 5, borderWidth: 1, borderColor: "#ffffff80" },
+  lastMoveRing: { position: "absolute", width: 19, height: 19, borderRadius: 12, borderWidth: 1.5, borderColor: "#ffffff", backgroundColor: "transparent" },
   captureFlash: { ...StyleSheet.absoluteFillObject, borderWidth: 3, borderColor: "#ffffff", borderRadius: 7, backgroundColor: "#ffffff12" },
   boardHint: { textAlign: "center", color: "#7e8ea3", fontSize: 9 },
+  historyPanel: { backgroundColor: "#121b28", borderWidth: 1, borderColor: "#243247", borderRadius: 9, padding: 10, gap: 9 },
+  historyHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  historyTitle: { color: "#8294aa", fontSize: 8, fontWeight: "800", letterSpacing: 1 },
+  historyCount: { color: "#71849c", fontSize: 8 },
+  historyList: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  historyItem: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#1a2737", borderWidth: 1, borderColor: "#2b3a4d", borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6 },
+  historyItemLast: { borderColor: "#9fb4cc", backgroundColor: "#25364a" },
+  historyNumber: { color: "#71849c", fontSize: 8 },
+  historyCoordinate: { color: "#e0e9f4", fontSize: 9, fontWeight: "800" },
+  historyDot: { width: 6, height: 6, borderRadius: 4 },
+  historyEmpty: { color: "#71849c", fontSize: 9 },
   notice: { textAlign: "center", color: "#c9d8e9", fontSize: 10, fontWeight: "600", marginTop: -5 },
   actions: { flexDirection: "row", gap: 7 },
   primaryAction: { flex: 1.3, alignItems: "center", justifyContent: "center", backgroundColor: "#a8d46d", paddingVertical: 12, borderRadius: 8 },
