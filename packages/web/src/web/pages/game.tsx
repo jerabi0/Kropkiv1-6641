@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ArenaImmersionControls, playCaptureSound, useArenaImmersion } from "../lib/arena-immersion";
+import "../styles/arena-immersion.css";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -86,6 +88,7 @@ function Emblem({ small = false }: { small?: boolean }) {
 }
 export default function GamePage() {
   const [stored] = useState(initial);
+  const immersion = useArenaImmersion();
   const [game, setGame] = useState<Game>(stored.game);
   const [mode, setMode] = useState<string>(stored.mode);
   const [level, setLevel] = useState(stored.level);
@@ -110,11 +113,12 @@ export default function GamePage() {
       captureSequence.current += 1;
       setCaptureAnimation({ id: captureSequence.current, zones: newZones });
       setNotice("Territoire capturé !");
+      playCaptureSound(immersion.sound);
     } else {
       setNotice("");
     }
     setGame(next);
-  }, []);
+  }, [immersion.sound]);
   useEffect(() => {
     try {
       localStorage.setItem("kropki-v1", JSON.stringify({ game, mode, level }));
@@ -312,7 +316,15 @@ export default function GamePage() {
                         : "Aux rouges de jouer"}
                 </div>
               </div>
-              <div className={"board-paper " + (ai ? "is-thinking" : "")}>
+              <ArenaImmersionControls
+                terrainId={immersion.terrainId}
+                sealId={immersion.sealId}
+                sound={immersion.sound}
+                setTerrain={immersion.setTerrain}
+                setSeal={immersion.setSeal}
+                setSound={immersion.setSound}
+              />
+              <div className={"board-paper " + (ai ? "is-thinking" : "")} data-terrain={immersion.terrain.id} style={{ "--terrain-background": immersion.terrain.background, "--terrain-grid": immersion.terrain.grid, "--terrain-accent": immersion.terrain.accent, "--terrain-glow": immersion.terrain.glow } as React.CSSProperties}>
                 <svg
                   className="game-board"
                   viewBox={`0 0 ${vw} ${vh}`}
@@ -349,6 +361,7 @@ export default function GamePage() {
                       y1={pad}
                       y2={vh - pad}
                       className="grid-line"
+                      stroke={immersion.terrain.grid}
                     />
                   ))}
                   {Array.from({ length: game.h }, (_, y) => (
@@ -359,13 +372,14 @@ export default function GamePage() {
                       x1={pad}
                       x2={vw - pad}
                       className="grid-line"
+                      stroke={immersion.terrain.grid}
                     />
                   ))}
                   {game.zones.map((z, i) => (
                     <g
                       key={i}
                       pointerEvents="none"
-                      className={captureAnimation?.zones.includes(z) ? "capture-zone" : undefined}
+                      className={captureAnimation?.zones.includes(z) ? `capture-zone capture-seal-${immersion.seal.id}` : undefined}
                       data-capture-id={captureAnimation?.zones.includes(z) ? captureAnimation.id : undefined}
                     >
                       {z.cells.map((c, j) => {
