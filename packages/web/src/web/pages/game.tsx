@@ -379,7 +379,7 @@ export default function GamePage() {
                     <g
                       key={i}
                       pointerEvents="none"
-                      className={captureAnimation?.zones.includes(z) ? `capture-zone capture-seal-${immersion.seal.id}` : undefined}
+                      className={`capture-zone capture-seal-${immersion.seal.id}${captureAnimation?.zones.includes(z) ? " is-animating" : ""}`}
                       data-capture-id={captureAnimation?.zones.includes(z) ? captureAnimation.id : undefined}
                     >
                       {z.cells.map((c, j) => {
