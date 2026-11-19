@@ -102,6 +102,19 @@ export default function GamePage() {
   const score = scores(game);
   const last = game.moves.at(-1);
   const ai = mode === "computer" && game.turn === 2 && !game.ended;
+  const commitMove = useCallback((source: Game, x: number, y: number) => {
+    const next = play(source, x, y);
+    if (next === source) return;
+    const newZones = next.zones.filter((zone) => !source.zones.includes(zone));
+    if (newZones.length) {
+      captureSequence.current += 1;
+      setCaptureAnimation({ id: captureSequence.current, zones: newZones });
+      setNotice("Territoire capturé !");
+    } else {
+      setNotice("");
+    }
+    setGame(next);
+  }, []);
   useEffect(() => {
     try {
       localStorage.setItem("kropki-v1", JSON.stringify({ game, mode, level }));
@@ -126,19 +139,6 @@ export default function GamePage() {
     const timer = window.setTimeout(() => setCaptureAnimation(null), 1050);
     return () => window.clearTimeout(timer);
   }, [captureAnimation]);
-  const commitMove = useCallback((source: Game, x: number, y: number) => {
-    const next = play(source, x, y);
-    if (next === source) return;
-    const newZones = next.zones.filter((zone) => !source.zones.includes(zone));
-    if (newZones.length) {
-      captureSequence.current += 1;
-      setCaptureAnimation({ id: captureSequence.current, zones: newZones });
-      setNotice("Territoire capturé !");
-    } else {
-      setNotice("");
-    }
-    setGame(next);
-  }, []);
   function move(x: number, y: number) {
     if (ai || game.ended) return;
     if (!legal(game, x, y)) {
