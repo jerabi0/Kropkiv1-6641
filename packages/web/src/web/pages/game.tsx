@@ -30,6 +30,7 @@ import {
   legal,
   computerMove,
   type Game,
+  type Zone,
 } from "../lib/kropki";
 const colors = ["", "#406be1", "#e46a58"];
 function initial() {
@@ -94,6 +95,8 @@ export default function GamePage() {
   const [newLevel, setNewLevel] = useState(level);
   const [hover, setHover] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
+  const [captureAnimation, setCaptureAnimation] = useState<{ id: number; zones: Zone[] } | null>(null);
+  const captureSequence = useRef(0);
   const [panel, setPanel] = useState<"play" | "history">("play");
   const dialog = useRef<HTMLDialogElement>(null);
   const score = scores(game);
@@ -110,7 +113,7 @@ export default function GamePage() {
     }
     const t = setTimeout(() => {
       const m = computerMove(game, level);
-      if (m) setGame(play(game, ...m));
+      if (m) commitMove(game, ...m);
     }, 420);
     return () => clearTimeout(t);
   }, [game, ai, level]);
@@ -118,20 +121,31 @@ export default function GamePage() {
     if (modal) dialog.current?.showModal();
     else dialog.current?.close();
   }, [modal]);
+  useEffect(() => {
+    if (!captureAnimation) return;
+    const timer = window.setTimeout(() => setCaptureAnimation(null), 1050);
+    return () => window.clearTimeout(timer);
+  }, [captureAnimation]);
+  function commitMove(source: Game, x: number, y: number) {
+    const next = play(source, x, y);
+    if (next === source) return;
+    const newZones = next.zones.filter((zone) => !source.zones.includes(zone));
+    if (newZones.length) {
+      captureSequence.current += 1;
+      setCaptureAnimation({ id: captureSequence.current, zones: newZones });
+      setNotice("Territoire capturé !");
+    } else {
+      setNotice("");
+    }
+    setGame(next);
+  }
   function move(x: number, y: number) {
     if (ai || game.ended) return;
     if (!legal(game, x, y)) {
       setNotice("Cette intersection est déjà occupée ou capturée.");
       return;
     }
-    const n = play(game, x, y);
-    const next = scores(n);
-    setNotice(
-      next[1] !== score[1] || next[2] !== score[2]
-        ? "Un territoire vient de changer de mains."
-        : "",
-    );
-    setGame(n);
+    commitMove(game, x, y);
   }
   function undo() {
     if (!game.moves.length) return;
@@ -346,12 +360,19 @@ export default function GamePage() {
                     />
                   ))}
                   {game.zones.map((z, i) => (
-                    <g key={i} pointerEvents="none">
-                      {z.cells.map((c) => {
+                    <g
+                      key={i}
+                      pointerEvents="none"
+                      className={captureAnimation?.zones.includes(z) ? "capture-zone" : undefined}
+                      data-capture-id={captureAnimation?.zones.includes(z) ? captureAnimation.id : undefined}
+                    >
+                      {z.cells.map((c, j) => {
                         const rw = game.w * 2 + 3;
                         return (
                           <rect
                             key={c}
+                            className={captureAnimation?.zones.includes(z) ? "capture-cell" : undefined}
+                            style={captureAnimation?.zones.includes(z) ? { animationDelay: `${Math.min(j * 7, 210)}ms` } : undefined}
                             x={pad + (((c % rw) - 2) * spacing) / 2 - spacing / 4}
                             y={pad + ((Math.floor(c / rw) - 2) * spacing) / 2 - spacing / 4}
                             width={spacing / 2 + 0.1}
@@ -370,6 +391,8 @@ export default function GamePage() {
                           y2={pad + ny * spacing}
                           stroke={colors[z.player]}
                           strokeWidth="2"
+                          className={captureAnimation?.zones.includes(z) ? "capture-edge" : undefined}
+                          style={captureAnimation?.zones.includes(z) ? { animationDelay: `${Math.min(j * 9, 180)}ms` } : undefined}
                         />
                       ))}
                     </g>
@@ -390,6 +413,7 @@ export default function GamePage() {
                               r={captured(game, i) ? 4.6 : 6.2}
                               fill={colors[p]}
                               opacity={captured(game, i) ? 0.42 : 1}
+                              className={last?.x === x && last?.y === y ? "placed-stone" : undefined}
                             />
                             {captured(game, i) && (
                               <path
@@ -407,6 +431,7 @@ export default function GamePage() {
                                 stroke={colors[p]}
                                 strokeWidth="1"
                                 opacity=".55"
+                                className="last-move-ring"
                               />
                             )}
                           </>
@@ -420,7 +445,7 @@ export default function GamePage() {
                           />
                         )}
                         {hover === i && available && (
-                          <circle cx={cx} cy={cy} r="6.2" fill={colors[game.turn]} opacity=".4" />
+                          <circle cx={cx} cy={cy} r="6.2" fill={colors[game.turn]} opacity=".4" className="hover-stone" />
                         )}
                         <foreignObject
                           x={cx - spacing / 2}
@@ -502,7 +527,9 @@ export default function GamePage() {
                     <div
                       key={p}
                       className={
-                        "player-score " + (game.turn === p && !game.ended ? "current" : "")
+                        "player-score " +
+                        (game.turn === p && !game.ended ? "current " : "") +
+                        (captureAnimation?.zones.some((zone) => zone.player === p) ? "score-bump" : "")
                       }
                     >
                       <div className="score-owner">
