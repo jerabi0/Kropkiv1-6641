@@ -74,7 +74,7 @@
 .game-board .capture-zone.capture-seal-wave .capture-edge { stroke-dasharray: 15 5; stroke-width: 3; }
 .game-board .capture-zone.capture-seal-skull .capture-edge { stroke-dasharray: 6 2 1 2; stroke-width: 3.5; }
 .game-board .capture-zone.capture-seal-constellation .capture-edge { stroke-dasharray: 1 7; stroke-width: 4; filter: drop-shadow(0 0 5px #b7a7ff); }
-.game-board .capture-zone.capture-seal-circle { animation: seal-impact 520ms ease-out both; transform-box: fill-box; transform-origin: center; }
+.game-board .capture-zone.is-animating { animation: seal-impact 520ms ease-out both; transform-box: fill-box; transform-origin: center; }
 @keyframes seal-impact {
   0% { opacity: .25; }
   45% { opacity: 1; }
