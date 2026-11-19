@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { ArenaImmersionControls, playCaptureSound, useArenaImmersion } from "../lib/arena-immersion";
+import "../styles/arena-immersion.css";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -86,6 +88,7 @@ function Emblem({ small = false }: { small?: boolean }) {
 }
 export default function GamePage() {
   const [stored] = useState(initial);
+  const immersion = useArenaImmersion();
   const [game, setGame] = useState<Game>(stored.game);
   const [mode, setMode] = useState<string>(stored.mode);
   const [level, setLevel] = useState(stored.level);
@@ -110,11 +113,12 @@ export default function GamePage() {
       captureSequence.current += 1;
       setCaptureAnimation({ id: captureSequence.current, zones: newZones });
       setNotice("Territoire capturé !");
+      playCaptureSound(immersion.sound, immersion.terrain.id);
     } else {
       setNotice("");
     }
     setGame(next);
-  }, []);
+  }, [immersion.sound]);
   useEffect(() => {
     try {
       localStorage.setItem("kropki-v1", JSON.stringify({ game, mode, level }));
@@ -312,7 +316,15 @@ export default function GamePage() {
                         : "Aux rouges de jouer"}
                 </div>
               </div>
-              <div className={"board-paper " + (ai ? "is-thinking" : "")}>
+              <ArenaImmersionControls
+                terrainId={immersion.terrainId}
+                sealId={immersion.sealId}
+                sound={immersion.sound}
+                setTerrain={immersion.setTerrain}
+                setSeal={immersion.setSeal}
+                setSound={immersion.setSound}
+              />
+              <div className={"board-paper " + (ai ? "is-thinking" : "")} data-terrain={immersion.terrain.id} style={{ color: immersion.terrain.accent, "--terrain-background": immersion.terrain.background, "--terrain-grid": immersion.terrain.grid, "--terrain-accent": immersion.terrain.accent, "--terrain-glow": immersion.terrain.glow } as CSSProperties}>
                 <svg
                   className="game-board"
                   viewBox={`0 0 ${vw} ${vh}`}
@@ -349,6 +361,7 @@ export default function GamePage() {
                       y1={pad}
                       y2={vh - pad}
                       className="grid-line"
+                      stroke={immersion.terrain.grid}
                     />
                   ))}
                   {Array.from({ length: game.h }, (_, y) => (
@@ -359,13 +372,14 @@ export default function GamePage() {
                       x1={pad}
                       x2={vw - pad}
                       className="grid-line"
+                      stroke={immersion.terrain.grid}
                     />
                   ))}
                   {game.zones.map((z, i) => (
                     <g
                       key={i}
                       pointerEvents="none"
-                      className={captureAnimation?.zones.includes(z) ? "capture-zone" : undefined}
+                      className={`capture-zone capture-seal-${immersion.seal.id}${captureAnimation?.zones.includes(z) ? " is-animating" : ""}`}
                       data-capture-id={captureAnimation?.zones.includes(z) ? captureAnimation.id : undefined}
                     >
                       {z.cells.map((c, j) => {
@@ -385,17 +399,28 @@ export default function GamePage() {
                         );
                       })}
                       {z.edges.map(([x, y, nx, ny], j) => (
-                        <line
-                          key={j}
-                          x1={pad + x * spacing}
-                          y1={pad + y * spacing}
-                          x2={pad + nx * spacing}
-                          y2={pad + ny * spacing}
-                          stroke={colors[z.player]}
-                          strokeWidth="2"
-                          className={captureAnimation?.zones.includes(z) ? "capture-edge" : undefined}
-                          style={captureAnimation?.zones.includes(z) ? { animationDelay: `${Math.min(j * 9, 180)}ms` } : undefined}
-                        />
+                        <g key={j}>
+                          <line
+                            x1={pad + x * spacing}
+                            y1={pad + y * spacing}
+                            x2={pad + nx * spacing}
+                            y2={pad + ny * spacing}
+                            stroke={colors[z.player]}
+                            strokeWidth="2"
+                            className={captureAnimation?.zones.includes(z) ? "capture-edge" : undefined}
+                            style={captureAnimation?.zones.includes(z) ? { animationDelay: `${Math.min(j * 9, 180)}ms` } : undefined}
+                          />
+                          {captureAnimation?.zones.includes(z) && (
+                            <circle
+                              cx={pad + ((x + nx) / 2) * spacing}
+                              cy={pad + ((y + ny) / 2) * spacing}
+                              r="3.2"
+                              fill={colors[z.player]}
+                              className="seal-spark"
+                              style={{ animationDelay: `${Math.min(j * 13, 260)}ms` }}
+                            />
+                          )}
+                        </g>
                       ))}
                     </g>
                   ))}
