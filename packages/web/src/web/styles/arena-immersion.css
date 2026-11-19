@@ -84,3 +84,37 @@
   .board-paper[data-terrain], .board-paper[data-terrain] .game-board .grid-line,
   .game-board .capture-zone.capture-seal-circle { transition: none; animation: none; }
 }
+
+/* Capture impact: the boundary draws first, then its seal particles flare. */
+.game-board .seal-spark {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: seal-spark-burst 620ms cubic-bezier(.12,.8,.25,1) both;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+@keyframes seal-spark-burst {
+  0% { opacity: 0; scale: .1; }
+  28% { opacity: 1; scale: 1.8; }
+  100% { opacity: 0; scale: .25; }
+}
+.game-board .capture-zone.is-animating .capture-edge {
+  filter: drop-shadow(0 0 5px currentColor);
+  stroke-width: 3.4;
+}
+@media (max-width: 680px) {
+  .arena-immersion-controls {
+    gap: 7px;
+    padding: 9px;
+  }
+  .arena-immersion-controls label {
+    flex-basis: calc(50% - 8px);
+  }
+  .arena-immersion-controls button {
+    flex: 1 1 100%;
+    min-height: 38px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-board .seal-spark { animation: none !important; opacity: 0 !important; }
+}
