@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Animated,
   Pressable,
   ScrollView,
@@ -175,7 +174,7 @@ export default function Index() {
 
         <View style={styles.boardHeader}>
           <Text style={styles.sectionTitle}>PLATEAU · {game.w} × {game.h}</Text>
-          <Text style={styles.turnText}>{game.ended ? winner : aiTurn ? "L'IA réfléchit…" : game.turn === 1 ? "À toi de jouer" : "Aux rouges de jouer"}</Text>
+          <Text style={[styles.turnText, { color: terrain.accent }]}>{game.ended ? winner : aiTurn ? "L'IA réfléchit…" : game.turn === 1 ? "À toi de jouer" : "Aux rouges de jouer"}</Text>
         </View>
         <View style={[styles.boardFrame, { backgroundColor: terrain.bg, borderColor: terrain.accent }]}>
           <View style={styles.board}>
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
   vs: { color: "#65748a", fontSize: 8, fontWeight: "800" },
   boardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 2 },
   sectionTitle: { color: "#a8b8ca", fontSize: 9, fontWeight: "800", letterSpacing: 0.8 },
-  turnText: { color: terrain.accent, fontSize: 9, fontWeight: "700" },
+  turnText: { fontSize: 9, fontWeight: "700" },
   boardFrame: { alignSelf: "center", borderWidth: 2, borderRadius: 10, padding: 6, shadowColor: "#000", shadowOpacity: 0.35, shadowRadius: 12, elevation: 5, overflow: "hidden" },
   board: { flexDirection: "row", flexWrap: "wrap", width: cellSize * 13 },
   cell: { alignItems: "center", justifyContent: "center", borderWidth: 0.55, borderRadius: 3 },
