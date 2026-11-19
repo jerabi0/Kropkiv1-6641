@@ -150,4 +150,13 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .game-board .seal-spark { animation: none !important; opacity: 0 !important; }
+  .game-board .capture-zone.is-animating,
+  .game-board .capture-zone.is-animating .capture-cell,
+  .game-board .capture-zone.is-animating .capture-edge {
+    animation: none !important;
+    transform: none !important;
+  }
+  .game-board .capture-zone.is-animating { opacity: 1; filter: none; }
+  .game-board .capture-zone.is-animating .capture-cell { opacity: 1; }
+  .game-board .capture-zone.is-animating .capture-edge { stroke-dashoffset: 0; }
 }
